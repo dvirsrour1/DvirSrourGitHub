@@ -8,7 +8,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.ToDo;
+import org.example.Verticles.ToDoEntity.ToDo;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -23,6 +23,7 @@ public class JsonWriter extends AbstractVerticle {
     private final static Logger logger = LogManager.getLogger(JsonWriter.class);
     private final static String FileName = "C:\\Users\\aliza_rvjno4x\\IdeaProjects\\KerenOrFirst\\src\\main\\java\\org\\example\\JsonFiles\\data.json";
     public enum FUNCTIONS{
+        WRONG_SYMBOL(0),
         WRITE_TO_FILE(1),
         READ_FROM_FILE(2),
         DELETE_FROM_FILE(3),
@@ -43,7 +44,7 @@ public class JsonWriter extends AbstractVerticle {
                     return f;
                 }
             }
-            return null;
+            return FUNCTIONS.WRONG_SYMBOL;
         }
 
     }
@@ -106,30 +107,16 @@ public class JsonWriter extends AbstractVerticle {
             logger.info("Hi! write 1 if you want to add information to the JSON file.");
             logger.info("write 2 if you want to read the information from the JSON file");
             logger.info("write 3 if you want to delete the information from the JSON file.");
+            logger.info("write -1 if you would like to Exit.");
             FUNCTIONS FromChoice = FUNCTIONS.fromInt(0);
             int choose = 0;
-            try {
-                choose = scanner.nextInt();
-                FromChoice = FUNCTIONS.fromInt(choose);
-                if (FromChoice == null) {
-                    logger.error("Invalid choice number");
-                    continue;
-                }
-            } catch (Exception e) {
-                logger.error("Invalid input", e);
-                scanner.next();
-                continue;
-            }
-
-            if (FromChoice == FUNCTIONS.STOP_FUNCTIONS) {
-                logger.info("Exiting application.");
-                break;
-            }
+            choose = scanner.nextInt();
+            FromChoice = FUNCTIONS.fromInt(choose);
             switch (FromChoice) {
                 case FUNCTIONS.WRITE_TO_FILE:
                     String Stopper = "y";
                     while(!Stopper.equals("done") && !Stopper.equals("Done") && !Stopper.equals("DONE")) {
-                        logger.info("write your Name: ");
+                        logger.info("Write your Name: ");
                         logger.warn("NOTICE: the name can't contain numbers or symbols.");
                         String name = scanner.next();
                         if(!name.matches("[a-zA-Z]+"))
@@ -178,8 +165,15 @@ public class JsonWriter extends AbstractVerticle {
 
 
                 case FUNCTIONS.DELETE_FROM_FILE:
-                    logger.info("which one would you like to delete?");
+                    logger.info("Which one would you like to delete? write his ID.");
                     String choice =scanner.next();
+                    try {
+                        Integer.parseInt(choice);
+                    } catch (Exception e)
+                    {
+                        logger.error("Wrong ID. Exiting application.");
+                        System.exit(0);
+                    }
                     logger.warn("Are you sure you want to delete the information from the JSON file? (1 for yes 0 for no)");
                     String YesNo = scanner.next();
                     if(Integer.parseInt(YesNo) == 1) {
@@ -195,8 +189,19 @@ public class JsonWriter extends AbstractVerticle {
                     }
                     break;
 
+
+                case STOP_FUNCTIONS:
+                    logger.info("Exiting application.");
+                    System.exit(0);
+                    break;
+
+                case WRONG_SYMBOL:
+                    logger.error("Symbol is not correct, Exiting application.");
+                    System.exit(0);
+                    break;
+
                 default:
-                    logger.error("Symbol is not correct");
+                    logger.error("Error");
                     System.exit(0);
                     break;
             }

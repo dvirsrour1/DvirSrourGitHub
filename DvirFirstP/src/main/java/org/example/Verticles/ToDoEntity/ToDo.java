@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Verticles.ToDoEntity;
 
 public class ToDo {
 
