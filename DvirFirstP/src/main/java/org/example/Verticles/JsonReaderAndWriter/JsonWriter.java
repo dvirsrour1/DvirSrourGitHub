@@ -1,5 +1,4 @@
 package org.example.Verticles.JsonReaderAndWriter;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.vertx.core.AbstractVerticle;
@@ -21,8 +20,9 @@ public class JsonWriter extends AbstractVerticle {
     private final static Gson gson = new Gson();
     private final static Vertx vertx = Vertx.vertx();
     private final static Logger logger = LogManager.getLogger(JsonWriter.class);
-    private final static String FileName = "C:\\Users\\aliza_rvjno4x\\IdeaProjects\\KerenOrFirst\\src\\main\\java\\org\\example\\JsonFiles\\data.json";
-    public enum FUNCTIONS{
+    private final static String FileName = "C:\\Users\\aliza_rvjno4x\\IdeaProjects\\DvirVerx.x\\src\\main\\java\\org\\example\\JsonFiles\\data.json";
+
+    public enum FUNCTIONS {
         WRONG_SYMBOL(0),
         WRITE_TO_FILE(1),
         READ_FROM_FILE(2),
@@ -30,6 +30,7 @@ public class JsonWriter extends AbstractVerticle {
         STOP_FUNCTIONS(-1);
 
         private int FUNC;
+
         FUNCTIONS(int func) {
             this.FUNC = func;
         }
@@ -48,30 +49,32 @@ public class JsonWriter extends AbstractVerticle {
         }
 
     }
-    private  final static String FirstBlock = """
-           ---------------------------------------------------------------------------------------
-           
-           Programmer: Dvir Srour
-           Date: 1.8.2024
-           KerenOrFirstProject_VertX
-           
-           
-           --------------------------------------------------------------------------------------- 
-        
-            """;
+
+    private final static String FirstBlock = """
+            ---------------------------------------------------------------------------------------
+                       
+            Programmer: Dvir Srour
+            Date: 1.8.2024
+            KerenOrFirstProject_VertX
+                       
+                       
+            --------------------------------------------------------------------------------------- 
+                    
+             """;
+
     @Override
-    public void start()
-    {
+    public void start() {
 
     } //eventLoop
 
 
-    public Future<Void> writeUserToFile(HashMap<String,ToDo> users) {
+    public Future<Void> writeUserToFile(HashMap<String, ToDo> users) {
         Promise<Void> promise = Promise.promise();
         vertx.executeBlocking(promiseHandler -> {
             Map<String, ToDo> todoMap = new HashMap<>();
-            try( FileReader reader = new FileReader(FileName)){
-                Type type = new TypeToken<HashMap<String, ToDo>>() {}.getType();
+            try (FileReader reader = new FileReader(FileName)) {
+                Type type = new TypeToken<HashMap<String, ToDo>>() {
+                }.getType();
                 todoMap = gson.fromJson(reader, type);
                 if (todoMap == null) {
                     todoMap = new HashMap<>();
@@ -101,13 +104,17 @@ public class JsonWriter extends AbstractVerticle {
         JsonDelete jsonDelete = new JsonDelete();
 
         Scanner scanner = new Scanner(System.in);
-        HashMap<String,ToDo> users = new HashMap<>();
+        HashMap<String, ToDo> users = new HashMap<>();
         System.out.println(FirstBlock);
         while (true) {
-            logger.info("Hi! write 1 if you want to add information to the JSON file.");
-            logger.info("write 2 if you want to read the information from the JSON file");
-            logger.info("write 3 if you want to delete the information from the JSON file.");
-            logger.info("write -1 if you would like to Exit.");
+            logger.info("Welcome to the ToDo Manager!");
+            logger.info("Please select an option:");
+            logger.info("1 - Add information to the JSON file");
+            logger.info("2 - Read information from the JSON file");
+            logger.info("3 - Delete information from the JSON file");
+            logger.info("-1 - Exit");
+            logger.info("Your choice: ");
+
             FUNCTIONS FromChoice = FUNCTIONS.fromInt(0);
             int choose = 0;
             choose = scanner.nextInt();
@@ -115,21 +122,19 @@ public class JsonWriter extends AbstractVerticle {
             switch (FromChoice) {
                 case FUNCTIONS.WRITE_TO_FILE:
                     String Stopper = "y";
-                    while(!Stopper.equals("done") && !Stopper.equals("Done") && !Stopper.equals("DONE")) {
+                    while (!Stopper.equals("done") && !Stopper.equals("Done") && !Stopper.equals("DONE")) {
                         logger.info("Write your Name: ");
                         logger.warn("NOTICE: the name can't contain numbers or symbols.");
                         String name = scanner.next();
-                        if(!name.matches("[a-zA-Z]+"))
-                        {
+                        if (!name.matches("[a-zA-Z]+")) {
                             logger.error("ERROR: the name can't contain numbers or symbols.");
                             System.exit(0);
                         }
                         logger.info("write your ID: ");
                         String id = scanner.next();
-                        try{
+                        try {
                             Integer.parseInt(id);
-                        }
-                        catch (Exception e){
+                        } catch (Exception e) {
                             logger.error("Invalid id number");
                             System.exit(0);
                             break;
@@ -155,7 +160,7 @@ public class JsonWriter extends AbstractVerticle {
 
                             logger.info("Read Successful");
                             for (Map.Entry<String, ToDo> entry : readResult.result().entrySet()) {
-                                logger.info("Key: " + entry.getKey() + ", name: " + entry.getValue().getName() +", id: " + entry.getValue().getId() +", Description: " + entry.getValue().getDescription());
+                                logger.info("Key: " + entry.getKey() + ", name: " + entry.getValue().getName() + ", id: " + entry.getValue().getId() + ", Description: " + entry.getValue().getDescription());
                             }
                         } else {
                             logger.info("Read Failed");
@@ -166,23 +171,21 @@ public class JsonWriter extends AbstractVerticle {
 
                 case FUNCTIONS.DELETE_FROM_FILE:
                     logger.info("Which one would you like to delete? write his ID.");
-                    String choice =scanner.next();
+                    String choice = scanner.next();
                     try {
                         Integer.parseInt(choice);
-                    } catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         logger.error("Wrong ID. Exiting application.");
                         System.exit(0);
                     }
                     logger.warn("Are you sure you want to delete the information from the JSON file? (1 for yes 0 for no)");
                     String YesNo = scanner.next();
-                    if(Integer.parseInt(YesNo) == 1) {
-                        jsonDelete.DeleteFromJson(choice).onComplete(result ->{
+                    if (Integer.parseInt(YesNo) == 1) {
+                        jsonDelete.DeleteFromJson(choice).onComplete(result -> {
                             if (result.succeeded()) {
                                 logger.info("Delete Successful");
                             }
-                            if(result.failed())
-                            {
+                            if (result.failed()) {
                                 logger.info("Delete Failed");
                             }
                         });
@@ -210,27 +213,7 @@ public class JsonWriter extends AbstractVerticle {
         }
 
 
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
 
+}

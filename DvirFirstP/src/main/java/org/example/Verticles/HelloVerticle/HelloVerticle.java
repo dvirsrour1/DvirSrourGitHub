@@ -1,7 +1,6 @@
 package org.example.Verticles.HelloVerticle;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 

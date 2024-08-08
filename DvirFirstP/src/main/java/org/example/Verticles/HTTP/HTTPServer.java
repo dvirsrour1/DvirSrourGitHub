@@ -1,12 +1,9 @@
 package org.example.Verticles.HTTP;
 
+
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.example.Verticles.JsonReaderAndWriter.JsonDelete;
@@ -14,7 +11,6 @@ import org.example.Verticles.JsonReaderAndWriter.JsonReader;
 import org.example.Verticles.JsonReaderAndWriter.JsonWriter;
 import org.example.Verticles.ToDoEntity.ToDo;
 
-import java.security.spec.ECField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -26,30 +22,33 @@ public class HTTPServer extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> future) {
-        vertx.createHttpServer() // הגדרת שרת
-                .requestHandler(r -> r.response().end("Welcome to Vert.x Intro") // הגדרת בקשה המטפלת בכל פנייה לשרת
-    ).listen(config().getInteger("http.port", 9090), //הגדרת PORT
-    result -> {
-        if (result.succeeded()) {
-            future.complete();
-        } else {
-            future.fail(result.cause());
-        }
-    }); //בדיקה האם ההאזנה לPORT הצליחה
 
         Router router = Router.router(vertx);
         router.get("/thelist").handler(this::GETTheList);
-        router.post("/newUser/:userId/:userName/:userDescription").handler(this::POSTNewUser);
-        router.post("/deleteUser/:userId").handler(this::POSTDeleteUser);
-        router.post("/updateUser/:userId/:userNewDescription").handler(this::POSTUpdateUser);
+        router.get("/newUser/:userId/:userName/:userDescription").handler(this::POSTNewUser);  //change to post
+        router.get("/deleteUser/:userId").handler(this::POSTDeleteUser); //change to post
+        router.get("/updateUser/:userId/:userNewDescription").handler(this::POSTUpdateUser); //chamge to post
+
+        vertx.createHttpServer() // הגדרת שרת
+                .requestHandler(router // הגדרת בקשה המטפלת בכל פנייה לשרת
+                ).listen(config().getInteger("http.port", 9090), //הגדרת PORT
+                        result -> {
+                            if (result.succeeded()) {
+                                future.complete();
+                            } else {
+                                future.fail(result.cause());
+                            }
+                        }); //בדיקה האם ההאזנה לPORT הצליחה
+
+
 
     }
     public void POSTNewUser(RoutingContext routingContext) {
         JsonWriter jsonWriter = new JsonWriter();
-        HashMap<String,ToDo> users= new HashMap<>();
+        HashMap<String, ToDo> users= new HashMap<>();
         String userId = routingContext.request().getParam("userId");
         String userName = routingContext.request().getParam("userName");
-        String description = routingContext.request().getParam("userNewDescription");
+        String description = routingContext.request().getParam("userDescription");
         try{
             Integer.parseInt(userId);
 
@@ -77,16 +76,16 @@ public class HTTPServer extends AbstractVerticle {
     public void GETTheList(RoutingContext routingContext) {
         JsonReader jsonReader = new JsonReader();
         jsonReader.readUserFromFile().onComplete(rc -> {
-           if(rc.succeeded())
-           {
-               String results = new String();
-               for (Map.Entry<String, ToDo> entry : rc.result().entrySet()) {
-                   results = results +("Key: " + entry.getKey() + ", name: " + entry.getValue().getName() +", id: " + entry.getValue().getId() +", Description: " + entry.getValue().getDescription());
-               }
-               routingContext.response().putHeader("content-type", "text/plain").end(results);
-           }else {
-               routingContext.response().putHeader("content-type", "text/plain").end("Reading has Failed.");
-           }
+            if(rc.succeeded())
+            {
+                String results = new String();
+                for (Map.Entry<String, ToDo> entry : rc.result().entrySet()) {
+                    results = results +("name: " + entry.getValue().getName() +", id: " + entry.getValue().getId() +", Description: " + entry.getValue().getDescription() + System.getProperty("line.separator"));
+                }
+                routingContext.response().putHeader("content-type", "text/plain").end(results);
+            }else {
+                routingContext.response().putHeader("content-type", "text/plain").end("Reading has Failed.");
+            }
         });
     }
     public void POSTUpdateUser(RoutingContext routingContext) {
@@ -104,6 +103,14 @@ public class HTTPServer extends AbstractVerticle {
                     userHelp.ToDo(entry.getValue().getName(),entry.getValue().getId(),entry.getValue().getDescription());
                     hashMapFromJson.put(entry.getKey(),userHelp);
                 } //reading it all to a ToDoHashMap
+                try{
+                    ToDo Find = hashMapFromJson.get(routingContext.request().getParam("userId"));
+                }catch (Exception e)
+                {
+                    routingContext.response().putHeader("content-type", "text/plain").end("User updating has failed.");
+                   // break;
+                    //fix - if deleted user has not found
+                }
                 ToDo TheUser = hashMapFromJson.get(routingContext.request().getParam("userId"));
                 TheUser.setDescription(routingContext.request().getParam("userNewDescription")); //Making a new ToDo with fixed description
                 POSTDeleteUser(routingContext); //deleting the one that exists
@@ -154,4 +161,3 @@ public class HTTPServer extends AbstractVerticle {
 
 
 }
-

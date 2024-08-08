@@ -14,7 +14,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class JsonDelete extends AbstractVerticle {
     private static final Gson gson = new Gson();
     private static final Vertx vertx = Vertx.vertx();
@@ -45,6 +44,9 @@ public class JsonDelete extends AbstractVerticle {
                         PromiseHandler.fail(e);
                     }
 
+                }
+                else {
+                    PromiseHandler.fail("id " + id + " not found");
                 }
                 if(todoMap.isEmpty()) {todoMap = null;};
                 PromiseHandler.complete(todoMap.toString());
